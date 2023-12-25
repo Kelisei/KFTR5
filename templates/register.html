@@ -1,13 +1,13 @@
 {% extends "layout.html" %}{% block body %}
 
 <h1>Register</h1>
-<p>What's up?</p>
+<p>{{ message }}</p>
 <form action="/register" method="post" class="text-black">
     <input type="text" name="username" placeholder="username" autocomplete="off">
     <input type="email" name="email" placeholder="email" autocomplete="off">
     <input type="password" name="password" placeholder="password" autocomplete="off">
-    <input type="text" name="username" placeholder="username" autocomplete="off">
     <select id="country" name="country"></select>
+    <input type="file" name="image" accept="image/*">
     <input type="submit" value="Submit">
 </form>
 <script>
