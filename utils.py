@@ -30,7 +30,6 @@ def make_pfp(image_binary: bytes, size: int, format="WebP") -> bytes:
     image = Image.open(BytesIO(image_binary)).resize((size, size))
     image_buffer = BytesIO()
     image.save(image_buffer, format=format)
-    image.save("profile_picture", format=format)
     return image_buffer.getvalue()
 
 
