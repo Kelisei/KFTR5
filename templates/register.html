@@ -2,15 +2,21 @@
 
 <h1>Register</h1>
 <p>{{ message }}</p>
-<form action="/register" method="post" class="text-black">
-    <input type="text" name="username" placeholder="username" autocomplete="off">
-    <input type="email" name="email" placeholder="email" autocomplete="off">
-    <input type="password" name="password" placeholder="password" autocomplete="off">
-    <select id="country" name="country"></select>
+<form action="/register" method="post" class="text-black" enctype="multipart/form-data">
+    <input type="text" name="username" placeholder="username">
+    <input type="email" name="email" placeholder="email">
+    <input type="password" name="password" placeholder="password">
+    <select id="country" name="country">
+        {% for country in countries %}
+        <option value="{{country}}"" text="{{country}}"">{{country}}
+        </option>
+        {% endfor %}
+    </select>
     <input type="file" name="image" accept="image/*">
     <input type="submit" value="Submit">
 </form>
 <script>
+    /* ? Old fetching, best to get it in server.
     fetch('https://restcountries.com/v2/all').then(response => response.json())
     .then(data => {
         const countryDropdown = document.getElementById('country')
@@ -21,5 +27,6 @@
             countryDropdown.add(option);
         });
     }).catch(error =>(console.error('Error fetching countries:', error)));
+    */
 </script>
 {% endblock %}

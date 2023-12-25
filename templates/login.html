@@ -1,7 +1,11 @@
 {% extends "layout.html" %}{% block body %}
-
-<h1>Log-in</h1>
-<p>What's up?</p>
+<h1> Log-in </h1>
+<p>{{ message }}</p>
+<form action="/login" method="post" class="text-black">
+    <input type="email" name="email" placeholder="email">
+    <input type="password" name="password" placeholder="password">
+    <input type="submit" value="Submit">
+</form>
 <form method="get" action="/register">
   <button type="submit">Register</button>
 </form>

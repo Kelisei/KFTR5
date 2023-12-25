@@ -4,8 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 import re
-import requests
-from image_managment import is_allowed_format, make_pfp
+import utils
 
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -39,7 +38,7 @@ class User(db.Model):
 
 class Follows(db.Model):
     follow_id = db.Column(db.Integer, primary_key=True)
-    follwed_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
+    followed_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     follower_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     follow_date = db.Column(db.Date)
     follow_hour = db.Column(db.Time)
@@ -98,21 +97,32 @@ def feed():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if session.get("id"):
+        redirect("/")
     if request.method == "GET":
-        return render_template("login.html")
-
-
+        return render_template("login.html", message="")
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        user = User.query.filter_by(email=email).first()
+        if user and bcrypt.check_password_hash(user.password_hash, password):
+            session["id"] = user.user_id
+            return redirect("/")
+        return render_template("login.html", message="Invalid email or password")
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if session.get("id"):
+        redirect("/")
+    country_names = utils.get_country_names(lower=False)
     if request.method == "GET":
         print(User.query.all())
-        return render_template("register.html", message="")
+        return render_template("register.html", message="", countries=country_names)
     if request.method == "POST":
         username = request.form.get("username")
         if len(username) == 0 or len(username) > 30:
             return render_template(
                 "register.html",
-                message="Pick a username with a length beetween 1 and 30 characters",
+                message="Pick a username with a length between 1 and 30 characters",
             )
         email = request.form.get("email")
         if len(email) == 0 or not email_pattern.match(email):
@@ -126,38 +136,37 @@ def register():
                 "register.html",
                 message="Please enter a valid password (minimum 6 characters, should contain a number)",
             )
-        country = request.form.get("country").lower()
-        response = requests.get("https://restcountries.com/v2/all")
-        country_names = [country["name"].lower() for country in response.json()]
+        country = request.form.get("country")
         if country not in country_names:
             return render_template(
                 "register.html",
                 message="Invalid country name",
             )
         image = request.files.get("image")
-        print(image)
         if not image:
             return render_template(
                 "register.html",
                 message="Profile picture not loaded",
+                countries=country_names
             )
-        if not is_allowed_format(image.filename):
+        if not utils.is_allowed_format(image.filename):
             return render_template(
                 "register.html",
                 message="Introduce a valid image (png, jpg, gif)",
+                countries=country_names
             )
-        image = make_pfp(image)
+        image_binary = utils.make_pfp(image.read(), 300)
         password_hash = bcrypt.generate_password_hash(password)
         new_user = User(
             username=username,
             email=email,
             password_hash=password_hash,
-            profile_picture=image,
+            profile_picture=image_binary,
             country=country,
         )
         db.session.add(new_user)
         db.session.commit()
-
+        return redirect("/")
 
 with app.app_context():
     db.drop_all()
