@@ -1,4 +1,9 @@
 {
     "python.analysis.typeCheckingMode": "off",
-    "wolf.disableHotModeWarning": true
+    "cSpell.words": [
+        "Kelisei",
+        "KFTR",
+        "Perronsio",
+        "SQLALCHEMY"
+    ]
 }

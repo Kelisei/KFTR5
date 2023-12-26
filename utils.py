@@ -1,8 +1,8 @@
 from PIL import Image
 from io import BytesIO
 import requests
-
 import re
+
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 SUCCESSFUL = 200
@@ -34,6 +34,12 @@ def make_pfp(image_binary: bytes, size: int, format="WebP") -> bytes:
     image.save(image_buffer, format=format)
     return image_buffer.getvalue()
 
+def optimize_image(image_binary: bytes, format="WebP", quality=40) -> bytes:
+    image = Image.open(BytesIO(image_binary))
+    image_buffer = BytesIO()
+    image.save(image_buffer, format=format, quality=quality)
+    image.save("here.WebP", format=format, quality=quality)
+    return image_buffer.getvalue()
 
 def get_country_names(lower: bool) -> list[str]:
     """Gets the country names from source and returns a list with all

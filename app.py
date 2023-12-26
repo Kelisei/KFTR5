@@ -5,6 +5,9 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 import re
 import utils
+from datetime import datetime
+import base64
+from datetime import timedelta
 
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -13,6 +16,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///dev.db"
 app.config["SESSION_PERMANENT"] = False
 app.secret_key = "KeliseiVenturaPerronsio1GokuVegetta777"
 app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_PERMANENT"] = True
+app.permanent_session_lifetime = timedelta(weeks=1)
+
 Session(app)
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
@@ -33,7 +39,7 @@ class User(db.Model):
     approved = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
-        return f"<User(user_id={self.user_id}, username={self.username}, email={self.email}, bio={self.bio}, website={self.website}, country={self.country}, approved={self.approved})>"
+        return f"<User(user_id={self.user_id}, username={self.username}, email={self.email}, bio={self.bio}, website={self.website}, country={self.country}, approved={self.approved}, {self.registration_date=} , {self.registration_hour=})>"
 
 
 class Follows(db.Model):
@@ -51,6 +57,9 @@ class Post(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     text = db.Column(db.Text)
     image = db.Column(db.LargeBinary)
+
+    def __repr__(self):
+        return f"<Post({self.post_id=},{self.text=},{self.post_hour=},{self.post_date=},{self.author_id=},{self.image=}"
 
 
 class Answer(db.Model):
@@ -87,14 +96,79 @@ class Message(db.Model):
     image = db.Column(db.LargeBinary)
 
 
+@app.route("/profile", methods=["GET", "POST"])
+def profile():
+    if not session.get("id"):
+        return redirect("/")
+    if request.method == "POST":
+        user_id = request.form.get("id")
+        return render_template(
+            "profile.html",
+            posts=list(
+                reversed(
+                    db.session.query(Post, User)
+                    .join(User, Post.author_id == User.user_id)
+                    .filter(User.user_id == user_id)
+                    .all()
+                )
+            )[:100],
+            user=User.query.filter_by(user_id=user_id).first(),
+        )
+    if request.method == "GET":
+        return render_template(
+            "profile.html",
+            posts=list(
+                reversed(
+                    db.session.query(Post, User)
+                    .join(User, Post.author_id == User.user_id)
+                    .filter(User.user_id == session["id"])
+                    .all()
+                )
+            )[:100],
+            user=User.query.filter_by(user_id=session["id"]).first(),
+        )
+
+
 @app.route("/", methods=["GET", "POST"])
 def feed():
-    print(session)
     if request.method == "GET" and session.get("id"):
-        return render_template("feed.html")
+        return render_template(
+            "feed.html",
+            posts=list(
+                reversed(
+                    db.session.query(Post, User)
+                    .join(User, Post.author_id == User.user_id)
+                    .all()
+                )
+            )[:100],
+        )
     if request.method == "POST":
         session["id"] = None
     return redirect("/login")
+
+
+@app.route("/new_post", methods=["POST"])
+def new_post():
+    text = request.form.get("text")
+    image = request.files.get("image")
+    image = image.read()
+    if image:
+        image = base64.b64encode(utils.optimize_image(image))
+    else:
+        image = None
+    id = session["id"]
+    if id and text:
+        new_post = Post(
+            post_date=datetime.now().date(),
+            post_hour=datetime.now().time(),
+            author_id=id,
+            text=text,
+            image=image,
+        )
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect("/")
+    return redirect("/")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -149,7 +223,7 @@ def process_registration(user_data: dict):
         None
     """
 
-    image_binary = utils.make_pfp(user_data["image"].read(), 300)
+    image_binary = base64.b64encode(utils.make_pfp(user_data["image"].read(), 300))
     password_hash = bcrypt.generate_password_hash(user_data["password"])
     new_user = User(
         username=user_data["username"],
@@ -157,6 +231,9 @@ def process_registration(user_data: dict):
         password_hash=password_hash,
         profile_picture=image_binary,
         country=user_data["country"],
+        approved=False,
+        registration_date=datetime.now().date(),
+        registration_hour=datetime.now().time(),
     )
 
     db.session.add(new_user)
@@ -203,7 +280,5 @@ def validate_registration(
 
 
 with app.app_context():
-    db.drop_all()
     db.create_all()
-
 app.run(debug=True)
