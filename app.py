@@ -87,11 +87,13 @@ class Message(db.Model):
     image = db.Column(db.LargeBinary)
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def feed():
-    print(User.query.all())
-    if session.get("id"):
+    print(session)
+    if request.method == "GET" and session.get("id"):
         return render_template("feed.html")
+    if request.method == "POST":
+        session["id"] = None
     return redirect("/login")
 
 
@@ -109,6 +111,8 @@ def login():
             session["id"] = user.user_id
             return redirect("/")
         return render_template("login.html", message="Invalid email or password")
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if session.get("id"):
@@ -118,55 +122,85 @@ def register():
         print(User.query.all())
         return render_template("register.html", message="", countries=country_names)
     if request.method == "POST":
-        username = request.form.get("username")
-        if len(username) == 0 or len(username) > 30:
+        user_data = {"username": request.form.get("username")}
+        user_data["email"] = request.form.get("email")
+        user_data["password"] = request.form.get("password")
+        user_data["country"] = request.form.get("country")
+        user_data["image"] = request.files.get("image")
+        result = validate_registration(user_data, country_names)
+        if result[0]:
             return render_template(
                 "register.html",
-                message="Pick a username with a length between 1 and 30 characters",
+                message=result[1],
+                countries=country_names,
             )
-        email = request.form.get("email")
-        if len(email) == 0 or not email_pattern.match(email):
-            return render_template(
-                "register.html",
-                message="Please enter a valid email, i.e: example@gmail.com",
-            )
-        password = request.form.get("password")
-        if len(password) < 7 or len(password) > 30 or not re.search(r"\d", password):
-            return render_template(
-                "register.html",
-                message="Please enter a valid password (minimum 6 characters, should contain a number)",
-            )
-        country = request.form.get("country")
-        if country not in country_names:
-            return render_template(
-                "register.html",
-                message="Invalid country name",
-            )
-        image = request.files.get("image")
-        if not image:
-            return render_template(
-                "register.html",
-                message="Profile picture not loaded",
-                countries=country_names
-            )
-        if not utils.is_allowed_format(image.filename):
-            return render_template(
-                "register.html",
-                message="Introduce a valid image (png, jpg, gif)",
-                countries=country_names
-            )
-        image_binary = utils.make_pfp(image.read(), 300)
-        password_hash = bcrypt.generate_password_hash(password)
-        new_user = User(
-            username=username,
-            email=email,
-            password_hash=password_hash,
-            profile_picture=image_binary,
-            country=country,
-        )
-        db.session.add(new_user)
-        db.session.commit()
+        process_registration(user_data)
         return redirect("/")
+
+
+def process_registration(user_data: dict):
+    """
+    Processes the user registration data.
+
+    Args:
+        user_data (dict): A dictionary containing the user registration data.
+
+    Returns:
+        None
+    """
+
+    image_binary = utils.make_pfp(user_data["image"].read(), 300)
+    password_hash = bcrypt.generate_password_hash(user_data["password"])
+    new_user = User(
+        username=user_data["username"],
+        email=user_data["email"],
+        password_hash=password_hash,
+        profile_picture=image_binary,
+        country=user_data["country"],
+    )
+
+    db.session.add(new_user)
+    db.session.commit()
+
+
+def validate_registration(
+    user_data: dict, country_names: list[str]
+) -> tuple[bool, str]:
+    """
+    Validates the user registration data.
+
+    Args:
+        user_data (dict): A dictionary containing the user registration data.
+
+    Returns:
+        tuple(bool, str): A tuple indicating if the validation passed or not, and an error message if any validation fails.
+    """
+
+    if not user_data["username"] or len(user_data["username"]) > 30:
+        return (True, "Pick a username with a length between 1 and 30 characters")
+    if User.query.filter_by(username=user_data["username"]).first():
+        return (True, "That username already exists")
+    if not user_data["email"] or not email_pattern.match(user_data["email"]):
+        return (True, "Please enter a valid email, i.e: example@gmail.com")
+    if User.query.filter_by(email=user_data["email"]).first():
+        return (True, "That email is already in use")
+    if (
+        len(user_data["password"]) < 7
+        or len(user_data["password"]) > 30
+        or not re.search(r"\d", user_data["password"])
+    ):
+        return (
+            True,
+            "Please enter a valid password (minimum 6 characters with a number)",
+        )
+    if user_data["country"] not in country_names:
+        return (True, "Not a valid country")
+    if not user_data["image"]:
+        return (True, "Profile picture not loaded")
+    if not utils.is_allowed_format(user_data["image"].filename):
+        return (True, "Introduce a valid image (png, jpg, gif)")
+    return (False, "")
+
 
 with app.app_context():
     db.drop_all()

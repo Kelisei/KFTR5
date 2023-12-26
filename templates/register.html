@@ -1,32 +1,70 @@
 {% extends "layout.html" %}{% block body %}
-
-<h1>Register</h1>
-<p>{{ message }}</p>
-<form action="/register" method="post" class="text-black" enctype="multipart/form-data">
-    <input type="text" name="username" placeholder="username">
-    <input type="email" name="email" placeholder="email">
-    <input type="password" name="password" placeholder="password">
-    <select id="country" name="country">
-        {% for country in countries %}
-        <option value="{{country}}"" text="{{country}}"">{{country}}
-        </option>
-        {% endfor %}
-    </select>
-    <input type="file" name="image" accept="image/*">
-    <input type="submit" value="Submit">
-</form>
+<div class="h-screen w-screen bg-purple-950 ">
+    <div
+        class="absolute min-w-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black p-6 rounded-3xl shadow-2xl">
+        <img src="../static/img/logo.png" class="h-96 rounded-full p-10">
+        <h1 class="text-center text-3xl">MAKE THY ACCOUNT</h1>
+        <h1 class="text-center text-1xl">register</h1>
+        <p class="text-center text-2xl text-red-500 py-5 italic">{{ message }}</p>
+        <form action="/register" method="post" class="text-black flex min-h-full flex-col justify-center px-2 pb-2"
+            enctype="multipart/form-data">
+            <div class="mt-2">
+                <input type="email" name="email" placeholder="E-mail"
+                    class="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+            </div>
+            <div class="mt-2">
+                <input type="text" name="username" placeholder="Username"
+                    class="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+            </div>
+            <div class="mt-2">
+                <input type="password" name="password" placeholder="Password"
+                    class="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+            </div>
+            <div>
+                <div class="mt-2">
+                    <select id="country" name="country"
+                        class="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                        {% for country in countries %}
+                        <option value="{{country}}"" text=" {{country}}"">{{country}}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div>
+                <div class="mt-2 flex justify-center align-middle">
+                    <input type="file" src="../static/img/default_profile_picture.png" name="image" accept="image/*"
+                        title="Upload profile picture" class="text-sm text-white
+                file:mr-4 file:py-2
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-violet-50 file:text-black
+                hover:file:bg-violet-100">
+                </div>
+            </div>
+            <div>
+                <div class="mt-2 flex justify-center">
+                    <input type="submit" value="Submit"
+                        class="text-xl bg-violet-900 w-full text-center rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6" />
+                </div>
+            </div>
+        </form>
+        <div class="flex justify-center align-middle">
+            <div class="bg-white w-1/3 rounded-md h-1 mt-2"></div>
+            <p class="text-center px-4">OR</p>
+            <div class="bg-white w-1/3 rounded-md h-1 mt-2"></div>
+        </div>
+        <form class="text-black flex min-h-full flex-col justify-center p-2" action="/login" method="get">
+            <div>
+                <div class="flex justify-center">
+                    <button
+                        class="bg-violet-900 w-full text-center rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6">Log-In</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 <script>
-    /* ? Old fetching, best to get it in server.
-    fetch('https://restcountries.com/v2/all').then(response => response.json())
-    .then(data => {
-        const countryDropdown = document.getElementById('country')
-        data.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country.name.toLowerCase();
-            option.text = country.name;
-            countryDropdown.add(option);
-        });
-    }).catch(error =>(console.error('Error fetching countries:', error)));
-    */
+    document.title = "MAKE THY ACCOUNT | KFTR5";
 </script>
 {% endblock %}

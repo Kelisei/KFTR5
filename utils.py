@@ -2,6 +2,8 @@ from PIL import Image
 from io import BytesIO
 import requests
 
+import re
+email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 SUCCESSFUL = 200
 
