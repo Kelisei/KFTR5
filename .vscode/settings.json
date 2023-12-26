@@ -4,6 +4,7 @@
         "Kelisei",
         "KFTR",
         "Perronsio",
-        "SQLALCHEMY"
+        "SQLALCHEMY",
+        "werkzeug"
     ]
 }

@@ -38,7 +38,6 @@ def optimize_image(image_binary: bytes, format="WebP", quality=40) -> bytes:
     image = Image.open(BytesIO(image_binary))
     image_buffer = BytesIO()
     image.save(image_buffer, format=format, quality=quality)
-    image.save("here.WebP", format=format, quality=quality)
     return image_buffer.getvalue()
 
 def get_country_names(lower: bool) -> list[str]:

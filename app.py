@@ -8,6 +8,7 @@ import utils
 from datetime import datetime
 import base64
 from datetime import timedelta
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -18,6 +19,7 @@ app.secret_key = "KeliseiVenturaPerronsio1GokuVegetta777"
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = True
 app.permanent_session_lifetime = timedelta(weeks=1)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 Session(app)
 bcrypt = Bcrypt(app)
@@ -281,4 +283,6 @@ def validate_registration(
 
 with app.app_context():
     db.create_all()
-app.run(debug=True)
+    
+if __name__ == '__main__':
+    app.run(host='0.0.0.0',port=5000)
