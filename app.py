@@ -3,19 +3,21 @@ from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
+from flask_cors import CORS
 import re
 import utils
 from datetime import datetime
 import base64
 from datetime import timedelta
 from werkzeug.middleware.proxy_fix import ProxyFix
+import os
 
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///dev.db"
 app.config["SESSION_PERMANENT"] = False
-app.secret_key = "KeliseiVenturaPerronsio1GokuVegetta777"
+app.secret_key = os.environ.get("SECRET_KEY")
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = True
 app.permanent_session_lifetime = timedelta(weeks=1)
@@ -25,7 +27,7 @@ Session(app)
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
+CORS(app)
 
 class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
