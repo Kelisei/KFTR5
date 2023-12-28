@@ -1,7 +1,7 @@
 {% extends "layout.html" %}{% block body %}
 {% include 'navbar.html' %}
 <div id="poster"
-  class="w-1/2 relative left-1/2 -translate-x-1/2 p-4 bg-gray-900 shadow-2xl shadow-black border-b-2 border-gray-700">
+  class="w-full lg:w-1/2  relative left-1/2 -translate-x-1/2 p-4 bg-gray-900 shadow-2xl shadow-black border-b-2 border-gray-700">
   <h1 class="text-gray-400">What's going on?</h1>
   <form enctype="multipart/form-data" action="/new_post" method="post">
     <div class="mt-2">
@@ -21,15 +21,15 @@
   </form>
 </div>
 <div id="posts"
-  class="flex flex-col absolute left-1/2 -translate-x-1/2 w-1/2 min-h-screen bg-gray-900 shadow-2xl shadow-black">
+  class="flex flex-col absolute left-1/2 -translate-x-1/2 w-full lg:w-1/2 min-h-screen bg-gray-900 shadow-2xl shadow-black overflow-hidden">
   {% for post, user in posts %}
-  <div class="flex flex-col align-middle border-b-2 border-gray-700 p-1 hover:p-4 duration-75 ease-in">
+  <div class="flex flex-col align-middle border-b-2 border-gray-700 p-1 duration-75 ease-in">
     <div>
       <form class="flex" action="/profile" method="post">
         <input name="id" hidden="true" value="{{user.user_id}}">
         <button type="submit">
           <img src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}"
-            class="rounded-full max-h-10 hover:border-4 hover:border-violet-600 hover:p-1 duration-75 ease-in">
+            class="rounded-full max-h-10 hover:border-4 hover:border-violet-600 duration-75 ease-in">
         </button>
         <button type="submit"
           class="text-xl text-blue-300 mx-4 hover:text-purple-400 border-b-2 border-gray-900 hover:border-purple-400 duration-75 ease-in">{{user.username}}</button>
@@ -45,8 +45,15 @@
   </div>
   {% endfor %}
 </div>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
   document.title = "INTO THE KFTR5VERSE | KFTR5";
+  let metaDesc = document.createElement('meta');
+  metaDesc.name = 'description';
+  metaDesc.content = "SPEAK THY MIND";
+  let head = document.head;
+  head.appendChild(metaDesc);
+
   $(document).ready(function () {
     $("#submitPost").click(function (event) {
       let text = $("#post_text").val();

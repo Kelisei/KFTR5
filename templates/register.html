@@ -2,7 +2,7 @@
 <div class="h-screen w-screen bg-purple-950 ">
     <div
         class="absolute min-w-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black p-6 rounded-3xl shadow-2xl shadow-black">
-        <img src="../static/img/logo.png" class="h-96 rounded-full p-10">
+        <img src="../static/img/logo_md.webp" class="h-96 rounded-full p-10" alt="LOGO">
         <h1 class="text-center text-3xl">MAKE THY ACCOUNT</h1>
         <h1 class="text-center text-1xl">register</h1>
         <p class="text-center text-2xl text-red-500 py-5 italic">{{ message }}</p>
@@ -66,5 +66,10 @@
 </div>
 <script>
     document.title = "MAKE THY ACCOUNT | KFTR5";
+    let metaDesc = document.createElement('meta');
+    metaDesc.name = 'description';
+    metaDesc.content = "MAKE THY ACCOUNT";
+    let head = document.head;
+    head.appendChild(metaDesc);
 </script>
 {% endblock %}

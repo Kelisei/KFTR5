@@ -1,10 +1,10 @@
 {% extends "layout.html" %}{% block body %}
 {% include 'navbar.html' %}
 <div id="user_posts"
-  class="flex flex-col absolute left-1/2 -translate-x-1/2 w-1/2 min-h-screen bg-gray-900 shadow-2xl shadow-black">
-  <div class="flex align-middle justify-between border-b-2 border-gray-700 p-5">
+  class="flex flex-col absolute left-1/2 -translate-x-1/2 w-full lg:w-1/2  min-h-screen bg-gray-900 shadow-2xl shadow-black">
+  <div class="flex lg:flex-row flex-col align-middle justify-between border-b-2 border-gray-700 p-5">
     <img class=" max-h-24 max-w-24 rounded-full border-2 border-purple-800"
-      src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}">
+      src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}" alt="user_profile_picture">
     <p class="py-10 text-2xl">{{ user.username}}</p>
     <p class="py-10 text-2xl text-gray-500">{{ user.email}}</p>
   </div>
@@ -33,5 +33,10 @@
 </div>
 <script>
   document.title = "INTO THE KFTR5VERSE | KFTR5";
+  let metaDesc = document.createElement('meta');
+  metaDesc.name = 'description';
+  metaDesc.content = "INTO THE KFTR5VERSE: {{ user.username }}";
+  let head = document.head;
+  head.appendChild(metaDesc);
 </script>
 {% endblock %}
