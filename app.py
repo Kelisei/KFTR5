@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, redirect, render_template, request, session, abort
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -28,6 +28,7 @@ bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 CORS(app)
+
 
 class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
@@ -100,37 +101,94 @@ class Message(db.Model):
     image = db.Column(db.LargeBinary)
 
 
-@app.route("/profile", methods=["GET", "POST"])
-def profile():
-    if not session.get("id"):
+def is_logged():
+    return bool(session.get("id"))
+
+
+def user_info(id: int):
+    return User.query.filter_by(user_id=id).first()
+
+
+def user_posts(id: int):
+    return (
+        db.session.query(Post, User)
+        .join(User, Post.author_id == User.user_id)
+        .filter(User.user_id == id)
+        .all()
+    )
+
+
+@app.errorhandler(404)
+def page_not_found():
+    return render_template("page_not_found.html"), 404
+
+
+@app.route("/ownprofile", methods=["GET", "POST"])
+def ownprofile():
+    if is_logged():
+        return redirect("/profile/" + user_info(session.get("id")).username, code=307)
+    return redirect("/login")
+
+
+@app.route("/profile/<username>", methods=["POST"])
+def profile(username):
+    if not is_logged:
+        return redirect("/login")
+    if username == user_info(session.get("id")).username:
+        return render_template(
+            "profile.html",
+            user=user_info(session.get("id")),
+            posts=user_posts(session.get("id")),
+            ownprofile=True,
+            followed=False,
+        )
+    user_id = request.form.get("id")
+    if not user_id:
         return redirect("/")
-    if request.method == "POST":
-        user_id = request.form.get("id")
-        return render_template(
-            "profile.html",
-            posts=list(
-                reversed(
-                    db.session.query(Post, User)
-                    .join(User, Post.author_id == User.user_id)
-                    .filter(User.user_id == user_id)
-                    .all()
-                )
-            )[:100],
-            user=User.query.filter_by(user_id=user_id).first(),
-        )
-    if request.method == "GET":
-        return render_template(
-            "profile.html",
-            posts=list(
-                reversed(
-                    db.session.query(Post, User)
-                    .join(User, Post.author_id == User.user_id)
-                    .filter(User.user_id == session["id"])
-                    .all()
-                )
-            )[:100],
-            user=User.query.filter_by(user_id=session["id"]).first(),
-        )
+    return render_template(
+        "profile.html",
+        user=user_info(user_id),
+        posts=user_posts(user_id),
+        ownprofile=session.get("id") == user_id,
+        followed=bool(
+            Follows.query.filter_by(
+                followed_id=user_id, follower_id=session.get("id")
+            ).first()
+        ),
+    )
+
+
+# @app.route("/profile", methods=["GET", "POST"])
+# def profile():
+#     if not session.get("id"):
+#         return redirect("/")
+#     if request.method == "POST":
+#         user_id = request.form.get("id")
+#         return render_template(
+#             "profile.html",
+#             posts=list(
+#                 reversed(
+#                     db.session.query(Post, User)
+#                     .join(User, Post.author_id == User.user_id)
+#                     .filter(User.user_id == user_id)
+#                     .all()
+#                 )
+#             )[:100],
+#             user=User.query.filter_by(user_id=user_id).first(),
+#         )
+#     if request.method == "GET":
+#         return render_template(
+#             "profile.html",
+#             posts=list(
+#                 reversed(
+#                     db.session.query(Post, User)
+#                     .join(User, Post.author_id == User.user_id)
+#                     .filter(User.user_id == session["id"])
+#                     .all()
+#                 )
+#             )[:100],
+#             user=User.query.filter_by(user_id=session["id"]).first(),
+#         )
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -160,16 +218,16 @@ def new_post():
         image = base64.b64encode(utils.optimize_image(image))
     else:
         image = None
-    id = session["id"]
+    id = session.get("id")
     if id and text:
-        new_post = Post(
+        user_post = Post(
             post_date=datetime.now().date(),
             post_hour=datetime.now().time(),
             author_id=id,
             text=text,
             image=image,
         )
-        db.session.add(new_post)
+        db.session.add(user_post)
         db.session.commit()
         return redirect("/")
     return redirect("/")
@@ -285,6 +343,6 @@ def validate_registration(
 
 with app.app_context():
     db.create_all()
-    
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)

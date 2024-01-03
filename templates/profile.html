@@ -7,11 +7,28 @@
       src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}" alt="user_profile_picture">
     <p class="py-10 text-2xl">{{ user.username}}</p>
     <p class="py-10 text-2xl text-gray-500">{{ user.email}}</p>
+    {% if not ownprofile %}
+    <form action="/follow" method="post">
+      {% if followed %}
+      <button
+        class="my-10, text-2xl bg-violet-900 w-full text-center rounded-md border-0 text-white shadow-sm ring-1 ring-inset ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6"
+        type="submit" name="follow" value="id">
+        Unfollow {{user.username}}
+      </button>
+      {% else %}
+      <button class="my-10 text-2xl bg-violet-900 w-full text-center rounded-md border-0 text-white shadow-sm ring-1
+        ring-inset ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500
+        sm:text-sm sm:leading-6" type="submit" name="follow" value="id">
+        Follow {{user.username}}
+      </button>
+      {% endif %}
+    </form>
+    {% endif %}
   </div>
   {% for post, user in posts %}
   <div class="flex flex-col align-middle border-b-2 border-gray-700 p-1 hover:p-4 duration-75 ease-in">
     <div>
-      <form class="flex" action="/profile" method="post">
+      <form class="flex" action="/profile/{{user.username}}" method="post">
         <input name="id" hidden="true" value="{{user.user_id}}">
         <button type="submit">
           <img src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}"
