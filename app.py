@@ -1,6 +1,5 @@
-from flask import Flask, redirect, render_template, request, session, abort
+from flask import Flask, redirect, render_template, request, session
 from flask_session import Session
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
@@ -11,7 +10,7 @@ import base64
 from datetime import timedelta
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
-
+from model import db, User, Post, Follows
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 app = Flask(__name__)
@@ -25,95 +24,23 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 
 Session(app)
 bcrypt = Bcrypt(app)
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
 CORS(app)
-
-
-class User(db.Model):
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(30), unique=True, nullable=False)
-    email = db.Column(db.String(50), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    bio = db.Column(db.Text)
-    website = db.Column(db.String(255))
-    profile_picture = db.Column(db.LargeBinary)
-    registration_date = db.Column(db.Date)
-    registration_hour = db.Column(db.Time)
-    country = db.Column(db.String(50))
-    approved = db.Column(db.Boolean, default=False)
-
-    def __repr__(self):
-        return f"<User(user_id={self.user_id}, username={self.username}, email={self.email}, bio={self.bio}, website={self.website}, country={self.country}, approved={self.approved}, {self.registration_date=} , {self.registration_hour=})>"
-
-
-class Follows(db.Model):
-    follow_id = db.Column(db.Integer, primary_key=True)
-    followed_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-    follower_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-    follow_date = db.Column(db.Date)
-    follow_hour = db.Column(db.Time)
-
-
-class Post(db.Model):
-    post_id = db.Column(db.Integer, primary_key=True)
-    post_date = db.Column(db.Date)
-    post_hour = db.Column(db.Time)
-    author_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-    text = db.Column(db.Text)
-    image = db.Column(db.LargeBinary)
-
-    def __repr__(self):
-        return f"<Post({self.post_id=},{self.text=},{self.post_hour=},{self.post_date=},{self.author_id=},{self.image=}"
-
-
-class Answer(db.Model):
-    answer_id = db.Column(db.Integer, primary_key=True)
-    answered_post_id = db.Column(
-        db.Integer, db.ForeignKey("post.post_id"), nullable=False
-    )
-    post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), nullable=False)
-
-
-class Liked(db.Model):
-    like_id = db.Column(db.Integer, primary_key=True)
-    like_hour = db.Column(db.Time)
-    like_date = db.Column(db.Date)
-    post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), nullable=False)
-    liker_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-
-
-class Chat(db.Model):
-    chat_id = db.Column(db.Integer, primary_key=True)
-    chat_date = db.Column(db.Date)
-    chat_hour = db.Column(db.Time)
-    user1_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-    user2_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-
-
-class Message(db.Model):
-    message_id = db.Column(db.Integer, primary_key=True)
-    message_date = db.Column(db.Date)
-    message_hour = db.Column(db.Time)
-    post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-    text = db.Column(db.Text)
-    image = db.Column(db.LargeBinary)
-
 
 def is_logged():
     return bool(session.get("id"))
 
 
-def user_info(id: int):
-    return User.query.filter_by(user_id=id).first()
+def user_info(user_id: int):
+    return User.query.filter_by(user_id=user_id).first()
+id
 
-
-def user_posts(id: int):
+def user_posts(user_id: int):
     return (
         db.session.query(Post, User)
         .join(User, Post.author_id == User.user_id)
-        .filter(User.user_id == id)
+        .filter(User.user_id == user_id)
         .all()
     )
 
@@ -126,11 +53,19 @@ def page_not_found():
 @app.route("/ownprofile", methods=["GET", "POST"])
 def ownprofile():
     if is_logged():
-        return redirect("/profile/" + user_info(session.get("id")).username, code=307)
+        return redirect("/" + user_info(session.get("id")).username, code=307)
     return redirect("/login")
 
 
-@app.route("/profile/<username>", methods=["POST"])
+@app.route("/follow", methods=["POST"])
+def follow():
+    if is_logged():
+        return render_template("edit.html", user=user_info(session.get("id")))
+@app.route("/edit", methods=["POST"])
+def edit_profile():
+    pass
+
+@app.route("/<username>", methods=["POST"])
 def profile(username):
     if not is_logged:
         return redirect("/login")
@@ -156,39 +91,6 @@ def profile(username):
             ).first()
         ),
     )
-
-
-# @app.route("/profile", methods=["GET", "POST"])
-# def profile():
-#     if not session.get("id"):
-#         return redirect("/")
-#     if request.method == "POST":
-#         user_id = request.form.get("id")
-#         return render_template(
-#             "profile.html",
-#             posts=list(
-#                 reversed(
-#                     db.session.query(Post, User)
-#                     .join(User, Post.author_id == User.user_id)
-#                     .filter(User.user_id == user_id)
-#                     .all()
-#                 )
-#             )[:100],
-#             user=User.query.filter_by(user_id=user_id).first(),
-#         )
-#     if request.method == "GET":
-#         return render_template(
-#             "profile.html",
-#             posts=list(
-#                 reversed(
-#                     db.session.query(Post, User)
-#                     .join(User, Post.author_id == User.user_id)
-#                     .filter(User.user_id == session["id"])
-#                     .all()
-#                 )
-#             )[:100],
-#             user=User.query.filter_by(user_id=session["id"]).first(),
-#         )
 
 
 @app.route("/", methods=["GET", "POST"])

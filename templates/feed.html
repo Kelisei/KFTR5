@@ -25,7 +25,7 @@
   {% for post, user in posts %}
   <div class="flex flex-col align-middle border-b-2 border-gray-700 p-1 duration-75 ease-in">
     <div>
-      <form class="flex" action="/profile/{{user.username}}" method="post">
+      <form class="flex" action="/{{user.username}}" method="post">
         <input name="id" hidden="true" value="{{user.user_id}}">
         <button type="submit">
           <img src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}"
