@@ -28,6 +28,14 @@
   </div>
   {% include "posts.html" %} 
 </div>
+<div id="edit" visibility="hidden">
+    <form action="/login" method="post" class="text-black flex min-h-full flex-col justify-center p-2">
+      <input type="text" name="username" value="">    
+      <input type="text" name="email" value="">
+      <input type="text" name="website" value="">
+      <textarea rows="" cols=""></textarea>
+    </form> 
+</div>
 <script>
   document.title = "INTO THE KFTR5VERSE | KFTR5";
   let metaDesc = document.createElement('meta');

@@ -5,9 +5,8 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import re
 
-from sqlalchemy.sql.functions import now
 import utils
-from datetime import date, datetime, time
+from datetime import datetime 
 import base64
 from datetime import timedelta
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -105,9 +104,15 @@ def follow(username: str):
     redirect("/")
 
 
-@app.route("/edit", methods=["POST"])
-def edit_profile():
-    pass
+@app.route("/<username>/edit", methods=["POST"])
+def edit_profile(username: str):
+    if user_exists(username) and is_logged():
+        profile_info = user_info(username)
+        if session.get("id") == profile_info.user_id:
+            return redirect("/")
+        else:
+            return redirect("/")
+
 
 
 @app.route("/<username>", methods=["GET"])
