@@ -1,0 +1,22 @@
+{% for post, user in posts %}
+  <div class="flex flex-col align-middle border-b-2 border-gray-700 p-1 duration-75 ease-in">
+    <div>
+      <form class="flex" action="/{{user.username}}" method="get">
+        <button type="submit">
+          <img src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}"
+            class="rounded-full max-h-10 hover:border-4 hover:border-violet-600 duration-75 ease-in">
+        </button>
+        <button type="submit"
+          class="text-xl text-blue-300 mx-4 hover:text-purple-400 border-b-2 border-gray-900 hover:border-purple-400 duration-75 ease-in">{{user.username}}</button>
+      </form>
+    </div>
+    <p class="p-2 text-xl">{{post.text}}</p>
+    {% if post.image != None %}
+    <div class="bg-black rounded-md mt-6 p-2">
+      <img src="data:image/png;base64,{{ post.image.decode('utf-8') }}"
+        class="max-h-96 max-w-96 relative left-1/2 -translate-x-1/2 border-2 border-black">
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+

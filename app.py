@@ -1,16 +1,19 @@
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 from flask_session import Session
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import re
+
+from sqlalchemy.sql.functions import now
 import utils
-from datetime import datetime
+from datetime import date, datetime, time
 import base64
 from datetime import timedelta
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 from model import db, User, Post, Follows
+
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 app = Flask(__name__)
@@ -28,13 +31,22 @@ db.init_app(app)
 migrate = Migrate(app, db)
 CORS(app)
 
-def is_logged():
+
+def user_exists(username: str) -> bool:
+    """
+    Returns if that id corresponds to a user stored
+    in the database, if the id is null then returns false.
+    """
+    return bool(User.query.filter_by(username=username).first())
+
+
+def is_logged() -> bool:
     return bool(session.get("id"))
 
 
-def user_info(user_id: int):
-    return User.query.filter_by(user_id=user_id).first()
-id
+def user_info(username: str):
+    return User.query.filter_by(username=username).first()
+
 
 def user_posts(user_id: int):
     return (
@@ -45,49 +57,74 @@ def user_posts(user_id: int):
     )
 
 
+def get_follow(followed_id: int, follower_id: int) -> Follows | None:
+    return Follows.query.filter_by(
+        followed_id=followed_id, follower_id=follower_id
+    ).first()
+
+
 @app.errorhandler(404)
-def page_not_found():
+def page_not_found(error):
     return render_template("page_not_found.html"), 404
 
 
 @app.route("/ownprofile", methods=["GET", "POST"])
 def ownprofile():
+    """Redirect to the profile of the currentyly logged user (with post
+    request) or goes to login."""
     if is_logged():
-        return redirect("/" + user_info(session.get("id")).username, code=307)
+        return redirect(
+            url_for(
+                "profile",
+                username=User.query.filter_by(user_id=session.get("id"))
+                .first()
+                .username,
+            )
+        )
     return redirect("/login")
 
 
-@app.route("/follow", methods=["POST"])
-def follow():
+@app.route("/follow/<username>", methods=["POST"])
+def follow(username: str):
     if is_logged():
-        return render_template("edit.html", user=user_info(session.get("id")))
+        if user_exists(username):
+            followed_id = user_info(username).user_id
+            follow = get_follow(followed_id, session.get("id"))
+            if not bool(follow):
+                follow = Follows(
+                    followed_id=followed_id,
+                    follower_id=session.get("id"),
+                    follow_date=datetime.now().date(),
+                    follow_hour=datetime.now().time(),
+                )
+                db.session.add(follow)
+            else:
+                db.session.delete(follow)
+            db.session.commit()
+        return redirect(url_for("profile", username=username))
+    redirect("/")
+
+
 @app.route("/edit", methods=["POST"])
 def edit_profile():
     pass
 
-@app.route("/<username>", methods=["POST"])
+
+@app.route("/<username>", methods=["GET"])
 def profile(username):
     if not is_logged:
         return redirect("/login")
-    if username == user_info(session.get("id")).username:
-        return render_template(
-            "profile.html",
-            user=user_info(session.get("id")),
-            posts=user_posts(session.get("id")),
-            ownprofile=True,
-            followed=False,
-        )
-    user_id = request.form.get("id")
-    if not user_id:
-        return redirect("/")
+    profile_info = user_info(username)
+    if not profile_info:
+        abort(404)
     return render_template(
         "profile.html",
-        user=user_info(user_id),
-        posts=user_posts(user_id),
-        ownprofile=session.get("id") == user_id,
+        user=profile_info,
+        posts=user_posts(profile_info.user_id),
+        ownprofile=session.get("id") == profile_info.user_id,
         followed=bool(
             Follows.query.filter_by(
-                followed_id=user_id, follower_id=session.get("id")
+                followed_id=profile_info.user_id, follower_id=session.get("id")
             ).first()
         ),
     )

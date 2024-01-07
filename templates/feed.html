@@ -6,7 +6,7 @@
   <form enctype="multipart/form-data" action="/new_post" method="post">
     <div class="mt-2">
       <textarea id="post_text" type="text" name="text" placeholder="Speak thy mind"
-        class="bg-gray-700 block h-32 w-full rounded-md border-0 p-1.5 text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" /></textarea>
+                                                       class="bg-gray-700 block h-32 w-full rounded-md border-0 p-1.5 text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" /></textarea>
     </div>
     <div class="mt-2"></div>
     <div class="mt-2 flex justify-center align-middle">
@@ -22,29 +22,8 @@
 </div>
 <div id="posts"
   class="flex flex-col absolute left-1/2 -translate-x-1/2 w-full lg:w-1/2 min-h-screen bg-gray-900 shadow-2xl shadow-black overflow-hidden">
-  {% for post, user in posts %}
-  <div class="flex flex-col align-middle border-b-2 border-gray-700 p-1 duration-75 ease-in">
-    <div>
-      <form class="flex" action="/{{user.username}}" method="post">
-        <input name="id" hidden="true" value="{{user.user_id}}">
-        <button type="submit">
-          <img src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}"
-            class="rounded-full max-h-10 hover:border-4 hover:border-violet-600 duration-75 ease-in">
-        </button>
-        <button type="submit"
-          class="text-xl text-blue-300 mx-4 hover:text-purple-400 border-b-2 border-gray-900 hover:border-purple-400 duration-75 ease-in">{{user.username}}</button>
-      </form>
-    </div>
-    <p class="p-2 text-xl">{{post.text}}</p>
-    {% if post.image != None %}
-    <div class="bg-black rounded-md mt-6 p-2">
-      <img src="data:image/png;base64,{{ post.image.decode('utf-8') }}"
-        class="max-h-96 max-w-96 relative left-1/2 -translate-x-1/2 border-2 border-black">
-    </div>
-    {% endif %}
+   {% include "posts.html" %} 
   </div>
-  {% endfor %}
-</div>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
   document.title = "INTO THE KFTR5VERSE | KFTR5";
