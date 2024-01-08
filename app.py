@@ -6,7 +6,7 @@ from flask_cors import CORS
 import re
 
 import utils
-from datetime import datetime 
+from datetime import datetime
 import base64
 from datetime import timedelta
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -109,10 +109,27 @@ def edit_profile(username: str):
     if user_exists(username) and is_logged():
         profile_info = user_info(username)
         if session.get("id") == profile_info.user_id:
-            return redirect("/")
-        else:
-            return redirect("/")
-
+            new_username = request.form.get("username")
+            if bool(new_username) or len(new_username) <= 30:
+                username=new_username
+                profile_info.username = new_username
+            new_email = request.form.get("email")
+            if bool(new_email) or email_pattern.match(new_email):
+                profile_info.email = new_email
+            new_bio = request.form.get("bio")
+            if bool(new_bio) and len(new_bio) < 256:
+                profile_info.bio = new_bio
+            new_website = request.form.get("website")
+            if bool(new_website) and len(new_website) < 256:
+                profile_info.website = new_website
+            pfp = request.files.get("pfp").read()
+            if bool(pfp):
+                pfp = base64.b64encode(utils.make_pfp(pfp, 300))
+                profile_info.profile_picture = pfp
+            print(profile_info)
+            db.session.commit()
+            return redirect(url_for("profile", username=username))
+    return redirect("/")
 
 
 @app.route("/<username>", methods=["GET"])
@@ -207,7 +224,7 @@ def register():
         user_data["password"] = request.form.get("password")
         user_data["country"] = request.form.get("country")
         user_data["image"] = request.files.get("image")
-        result = validate_registration(user_data, country_names)
+        result = validate_user_info(user_data, country_names)
         if result[0]:
             return render_template(
                 "register.html",
@@ -246,7 +263,7 @@ def process_registration(user_data: dict):
     db.session.commit()
 
 
-def validate_registration(
+def validate_user_info(
     user_data: dict, country_names: list[str]
 ) -> tuple[bool, str]:
     """

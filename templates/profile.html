@@ -1,24 +1,15 @@
 {% extends "layout.html" %}{% block body %} {% include 'navbar.html' %}
-<div
-  id="user_posts"
-  class="flex flex-col absolute left-1/2 -translate-x-1/2 w-full lg:w-1/2 min-h-screen bg-gray-900 shadow-2xl shadow-black"
->
-  <div
-    class="flex lg:flex-row flex-col align-middle justify-between border-b-2 border-gray-700 p-5"
-  >
-    <img
-      class="max-h-24 max-w-24 rounded-full border-2 border-purple-800"
-      src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}"
-      alt="user_profile_picture"
-    />
+<div id="user_posts"
+  class="flex flex-col absolute left-1/2 -translate-x-1/2 w-full lg:w-1/2 min-h-screen bg-gray-900 shadow-2xl shadow-black">
+  <div class="flex lg:flex-row flex-col align-middle justify-between border-b-2 border-gray-700 p-5">
+    <img class="max-h-24 max-w-24 rounded-full border-2 border-purple-800"
+      src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}" alt="user_profile_picture" />
     <p class="py-10 text-2xl">{{ user.username}}</p>
     <p class="py-10 text-2xl text-gray-500">{{ user.email}}</p>
     {% if not ownprofile %}
     <form action="/follow/{{user.username}}" method="post">
-      <button
-        class="my-10 text-2xl ease-in duration-75 border-2 hover:text-violet-600 hover:border-violet-600"
-        type="submit"
-      >
+      <button class="my-10 text-2xl ease-in duration-75 border-2 hover:text-violet-600 hover:border-violet-600"
+        type="submit">
         {% if followed %}
         <i class="fa-solid fa-user-minus"></i>
         {% else %}
@@ -27,75 +18,88 @@
       </button>
     </form>
     {% else %}
-    <form action="/edit/{{user.username}}" method="post">
-      <button
-        class="my-10 text-2xl ease-in duration-75 border-transparent border-b-4 hover:text-violet-600 hover:border-violet-600"
-        type="submit"
-      >
-        <i class="fa-solid fa-user-pen"></i>
-      </button>
-    </form>
+    <button id="edit-profile"
+      class="my-10 text-2xl ease-in duration-75 border-transparent border-b-4 hover:text-violet-600 hover:border-violet-600"
+      type="submit">
+      <i class="fa-solid fa-user-pen"></i>
+    </button>
     {% endif %}
   </div>
   {% include "posts.html" %}
 </div>
-<div class=" w-screen bg-black h-full">
-  <div
-    id="edit"
-    class="absolute backdrop:blur-xl left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-gray-900 w-1/4 rounded-md"
-  >
-    <form
-      action="/login"
-      method="post"
-      class="text-black flex min-h-full flex-col justify-center content-center p-2 shadow-2xl shadow-black"
-    >
+{% if ownprofile %}
+<div id="edit-screen">
+  <div id="edit"
+    class="absolute backdrop:blur-xl left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-gray-900 w-1/4 rounded-md">
+    <form action="/{{user.username}}/edit" method="post" enctype="multipart/form-data"
+      class="text-black flex min-h-full flex-col justify-center content-center p-2 shadow-2xl shadow-black">
       <p class="p-4 text-white text-2xl">Change your information</p>
       <p class="px-4 text-white">Username</p>
-      <input type="email" name="email" value="{{user.username}}"
-      class="rounded-md m-4 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+      <input type="text" name="username" value="{{user.username}}"
+        class="rounded-md m-4 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 
+        focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
       <p class="px-4 text-white">Email</p>
       <input type="email" name="email" value="{{user.email}}"
-      class="rounded-md m-4 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+        class="rounded-md m-4 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 
+        focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
       <p class="px-4 text-white">Website</p>
-      <input type="email" name="email" value="{{user.website}}"
-      class="rounded-md m-4 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+      <input type="text" name="website" value="{{user.website}}"
+        class="rounded-md m-4 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 
+        focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
       <p class="px-4 text-white">Bio</p>
-      <textarea type="text" name="text"
-      class="m-4 h-32 rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />{{user.bio}}</textarea>
+      <textarea type="text" name="bio"
+        class="m-4 h-32 rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
+        focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />{{user.bio}}</textarea>
       <p class="px-4 text-white">Profile picture</p>
-      <img
-        src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}"
-        class="w-40 rounded-full m-4"
-      />
-      <label
-        for="image-input"
-        class="text-xl bg-violet-900 w-full text-center rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6"
-        >Upload image</label
-      >
+
+      <img id="pfp" src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}" class="w-40 h-40 rounded-full m-4 relative left-1/2 -translate-x-1/2" />
+      <label for="image-input"
+        class="text-xl bg-violet-900 w-full text-center rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset 
+        ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6">Upload
+        image</label>
       <div class="m-4 flex justify-center align-middle">
-        <input
-          id="image-input"
-          type="file"
-          name="image"
-          accept="image/*"
-          title="Upload profile picture"
-          class="hidden"
-        />
+        <input id="image-input" type="file" name="pfp" accept="image/*" title="Upload profile picture"
+          class="hidden" />
       </div>
-      <input
-        type="submit"
-        value="Submit"
-        class="text-xl bg-violet-900 w-full text-center rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6"
-      />
+
+      <div class="flex flex-row" >
+        <button id="cancel-edit" value="Cancel" class="w-1/2 text-xl bg-red-900 m-1 text-center rounded-md border-0 py-1.5 
+        text-white shadow-sm ring-1 ring-inset ring-red-800 placeholder:text-gray-400 focus:ring-2 
+        focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6">Cancel</button>
+        <input type="submit" value="Submit"
+          class="w-1/2 text-xl bg-violet-900 m-1 text-center rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset 
+          ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6"/>
+      </div>
     </form>
   </div>
 </div>
+{% endif %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
-  document.title = "INTO THE KFTR5VERSE | KFTR5";
+  function toggleHidden(){
+    screen = $("#edit-screen")
+    if (screen.hasClass("hidden")){
+      screen.removeClass("hidden");
+    } else {
+      screen.addClass("hidden");
+    }
+  }
   let metaDesc = document.createElement("meta");
   metaDesc.name = "description";
   metaDesc.content = "INTO THE KFTR5VERSE: {{ user.username }}";
   let head = document.head;
   head.appendChild(metaDesc);
+  $(document).ready(function () {
+    $("#edit-profile").click(function (event) {
+      toggleHidden();
+    })
+    $("#cancel-edit").click(function (event) {
+      event.preventDefault();
+      toggleHidden();
+    })
+    $("#image-input").change(function(){
+      $("#pfp").attr('src', URL.createObjectURL($("#image-input").prop('files')[0])) 
+    })
+  })
 </script>
 {% endblock %}
