@@ -28,7 +28,7 @@
   {% include "posts.html" %}
 </div>
 {% if ownprofile %}
-<div id="edit-screen">
+<div id="edit-screen" class="hidden">
   <div id="edit"
     class="absolute backdrop:blur-xl left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-gray-900 w-1/4 rounded-md">
     <form action="/{{user.username}}/edit" method="post" enctype="multipart/form-data"
