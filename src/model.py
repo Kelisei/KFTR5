@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 
 db = SQLAlchemy()
 
@@ -59,6 +60,25 @@ class Follows(db.Model):
     follow_hour = db.Column(db.Time)
 
 
+class Liked(db.Model):
+    """
+    Represents a 'like' instance in the database.
+
+    Attributes:
+        like_id (int): Primary key identifying the like instance.
+        like_hour (datetime.time): Time when the like was given.
+        like_date (datetime.date): Date when the like was given.
+        post_id (int): Foreign key referencing the associated post's ID.
+        liker_id (int): Foreign key referencing the user who gave the like.
+    """
+
+    like_id = db.Column(db.Integer, primary_key=True)
+    like_hour = db.Column(db.Time)
+    like_date = db.Column(db.Date)
+    post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), nullable=False)
+    liker_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
+
+
 class Post(db.Model):
     """
     Represents a post in the application.
@@ -74,6 +94,7 @@ class Post(db.Model):
     Methods:
     - __repr__(): Returns a string representation of the Post object for debugging purposes.
     """
+
     post_id = db.Column(db.Integer, primary_key=True)
     post_date = db.Column(db.Date)
     post_hour = db.Column(db.Time)
@@ -81,6 +102,7 @@ class Post(db.Model):
     text = db.Column(db.Text)
     image = db.Column(db.LargeBinary)
     answered_post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"))
+    likes = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return f"<Post({self.post_id=},{self.text=},{self.post_hour=},{self.post_date=},{self.author_id=},{self.image=}"
@@ -92,14 +114,6 @@ class Answer(db.Model):
         db.Integer, db.ForeignKey("post.post_id"), nullable=False
     )
     post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), nullable=False)
-
-
-class Liked(db.Model):
-    like_id = db.Column(db.Integer, primary_key=True)
-    like_hour = db.Column(db.Time)
-    like_date = db.Column(db.Date)
-    post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"), nullable=False)
-    liker_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
 
 
 class Chat(db.Model):

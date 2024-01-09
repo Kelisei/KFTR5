@@ -1,4 +1,4 @@
-from flask import Flask, abort, redirect, render_template, request, session, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for, jsonify
 from flask_session import Session
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
@@ -11,7 +11,7 @@ import base64
 from datetime import timedelta
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
-from src.model import db, User, Post, Follows
+from src.model import db, User, Post, Follows, Liked
 
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -66,20 +66,44 @@ def get_follow(followed_id: int, follower_id: int) -> Follows | None:
 def page_not_found(error):
     return render_template("page_not_found.html"), 404
 
-@app.route("/like", methods=["POST"])
-def like():
-    
+
+@app.route("/<int:post_id>/like", methods=["POST"])
+def like(post_id: int):
+    if is_logged():
+        username = request.form.get("username")
+        data = user_info(username)
+        post = Post.query.filter_by(post_id = post_id).first()
+        if bool(data):
+            new_like = Liked.query.filter_by(post_id=post_id, liker_id=data.user_id).first()
+            if bool(new_like):
+                post.likes -= 1
+                db.session.delete(new_like)
+            else:
+                new_like = Liked(
+                    like_hour=datetime.now().time(),
+                    like_date=datetime.now().date(),
+                    post_id=post_id,
+                    liker_id=data.user_id,
+                )
+                post.likes += 1
+                db.session.add(new_like)
+            db.session.commit()
+        return jsonify({'likes': post.likes})
+    abort(404)
 
 
 @app.route("/int:post_id>", methods=["GET"])
-def see_post(post_id:int):
+def see_post(post_id: int):
     if is_logged():
         post = Post.query.filter_by(post_id=post_id).first()
         if bool(post):
             replies = Post.query.filter_by(answered_post_id=post_id)
             replied = Post.query.filter_by(post_id=post.answered_post_id)
-            return render_template("post.html", post=post, replies=replies, replied=replied)
+            return render_template(
+                "post.html", post=post, replies=replies, replied=replied
+            )
     return redirect("/")
+
 
 @app.route("/ownprofile", methods=["GET", "POST"])
 def ownprofile():
@@ -102,17 +126,17 @@ def follow(username: str):
     if is_logged():
         if user_exists(username):
             followed_id = user_info(username).user_id
-            follow = get_follow(followed_id, session.get("id"))
-            if not bool(follow):
-                follow = Follows(
+            new_follow = get_follow(followed_id, session.get("id"))
+            if not bool(new_follow):
+                new_follow = Follows(
                     followed_id=followed_id,
                     follower_id=session.get("id"),
                     follow_date=datetime.now().date(),
                     follow_hour=datetime.now().time(),
                 )
-                db.session.add(follow)
+                db.session.add(new_follow)
             else:
-                db.session.delete(follow)
+                db.session.delete(new_follow)
             db.session.commit()
         return redirect(url_for("profile", username=username))
     redirect("/")
@@ -125,7 +149,7 @@ def edit_profile(username: str):
         if session.get("id") == profile_info.user_id:
             new_username = request.form.get("username")
             if bool(new_username) or len(new_username) <= 30:
-                username=new_username
+                username = new_username
                 profile_info.username = new_username
             new_email = request.form.get("email")
             if bool(new_email) or email_pattern.match(new_email):
@@ -277,9 +301,7 @@ def process_registration(user_data: dict):
     db.session.commit()
 
 
-def validate_user_info(
-    user_data: dict, country_names: list[str]
-) -> tuple[bool, str]:
+def validate_user_info(user_data: dict, country_names: list[str]) -> tuple[bool, str]:
     """
     Validates the user registration data.
 
