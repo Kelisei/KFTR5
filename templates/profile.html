@@ -4,11 +4,11 @@
   <div class="flex lg:flex-row flex-col align-middle justify-between border-b-2 border-gray-700 p-5">
     <img class="max-h-24 max-w-24 rounded-full border-2 border-purple-800"
       src="data:image/png;base64,{{ user.profile_picture.decode('utf-8') }}" alt="user_profile_picture" />
-    <p class="py-10 text-2xl">{{ user.username}}</p>
-    <p class="py-10 text-2xl text-gray-500">{{ user.email}}</p>
+    <p class="lg:py-10 text-2xl">{{ user.username}}</p>
+    <p class="lg:py-10 text-2xl text-gray-500">{{ user.email}}</p>
     {% if not ownprofile %}
     <form action="/follow/{{user.username}}" method="post">
-      <button class="my-10 text-2xl ease-in duration-75 border-2 hover:text-violet-600 hover:border-violet-600"
+      <button class="lg:my-10 text-2xl ease-in duration-75 border-b-4 border-transparent hover:text-violet-600 hover:border-violet-600"
         type="submit">
         {% if followed %}
         <i class="fa-solid fa-user-minus"></i>
@@ -18,11 +18,13 @@
       </button>
     </form>
     {% else %}
-    <button id="edit-profile"
-      class="my-10 text-2xl ease-in duration-75 border-transparent border-b-4 hover:text-violet-600 hover:border-violet-600"
+    <div>
+      <button id="edit-profile"
+      class="lg:my-10 text-2xl ease-in duration-75 border-transparent border-b-4 hover:text-violet-600 hover:border-violet-600"
       type="submit">
-      <i class="fa-solid fa-user-pen"></i>
-    </button>
+        <i class="fa-solid fa-user-pen"></i>
+      </button>
+    </div>
     {% endif %}
   </div>
   {% include "posts.html" %}
@@ -30,7 +32,7 @@
 {% if ownprofile %}
 <div id="edit-screen" class="hidden">
   <div id="edit"
-    class="absolute backdrop:blur-xl left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-gray-900 w-1/4 rounded-md">
+    class="absolute backdrop:blur-xl left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-gray-900 w-full lg:w-1/4 rounded-md">
     <form action="/{{user.username}}/edit" method="post" enctype="multipart/form-data"
       class="text-black flex min-h-full flex-col justify-center content-center p-2 shadow-2xl shadow-black">
       <p class="p-4 text-white text-2xl">Change your information</p>
