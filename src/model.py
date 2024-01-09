@@ -80,6 +80,7 @@ class Post(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     text = db.Column(db.Text)
     image = db.Column(db.LargeBinary)
+    answered_post_id = db.Column(db.Integer, db.ForeignKey("post.post_id"))
 
     def __repr__(self):
         return f"<Post({self.post_id=},{self.text=},{self.post_hour=},{self.post_date=},{self.author_id=},{self.image=}"

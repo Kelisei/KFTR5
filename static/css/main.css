@@ -666,6 +666,10 @@ video {
   width: 100vw;
 }
 
+.w-11 {
+  width: 2.75rem;
+}
+
 .min-w-96 {
   min-width: 24rem;
 }
@@ -1097,6 +1101,16 @@ video {
 .hover\:text-violet-600:hover {
   --tw-text-opacity: 1;
   color: rgb(124 58 237 / var(--tw-text-opacity));
+}
+
+.hover\:text-violet-900:hover {
+  --tw-text-opacity: 1;
+  color: rgb(76 29 149 / var(--tw-text-opacity));
+}
+
+.hover\:text-violet-500:hover {
+  --tw-text-opacity: 1;
+  color: rgb(139 92 246 / var(--tw-text-opacity));
 }
 
 .hover\:file\:bg-violet-100::file-selector-button:hover {

@@ -5,13 +5,13 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import re
 
-import utils
+import src.utils as utils
 from datetime import datetime
 import base64
 from datetime import timedelta
 from werkzeug.middleware.proxy_fix import ProxyFix
 import os
-from model import db, User, Post, Follows
+from src.model import db, User, Post, Follows
 
 email_pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -66,6 +66,20 @@ def get_follow(followed_id: int, follower_id: int) -> Follows | None:
 def page_not_found(error):
     return render_template("page_not_found.html"), 404
 
+@app.route("/like", methods=["POST"])
+def like():
+    
+
+
+@app.route("/int:post_id>", methods=["GET"])
+def see_post(post_id:int):
+    if is_logged():
+        post = Post.query.filter_by(post_id=post_id).first()
+        if bool(post):
+            replies = Post.query.filter_by(answered_post_id=post_id)
+            replied = Post.query.filter_by(post_id=post.answered_post_id)
+            return render_template("post.html", post=post, replies=replies, replied=replied)
+    return redirect("/")
 
 @app.route("/ownprofile", methods=["GET", "POST"])
 def ownprofile():
