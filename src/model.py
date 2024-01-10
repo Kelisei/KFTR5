@@ -105,7 +105,7 @@ class Post(db.Model):
     likes = db.Column(db.Integer, default=0)
 
     def __repr__(self):
-        return f"<Post({self.post_id=},{self.text=},{self.post_hour=},{self.post_date=},{self.author_id=},{self.image=}"
+        return f"<Post({self.post_id=},{self.text=},{self.post_hour=},{self.post_date=},{self.author_id=},{self.image=}, {self.answered_post_id=}"
 
 
 class Answer(db.Model):

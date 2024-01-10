@@ -18,7 +18,7 @@
         <button class="comment text-2xl hover:text-violet-600 duration-75 ease-in" value="{{post.post_id}}">
             <i class="fa-solid fa-comment"></i>
         </button>
-        <form action="/{{post.post_id}}" class="text-2xl hover:text-violet-600 duration-75 ease-in">
+        <form action="/{{post.post_id}}/see" class="text-2xl hover:text-violet-600 duration-75 ease-in">
             <button>
                 <i class="fa-solid fa-comments"></i>
             </button>
@@ -53,8 +53,8 @@
       });
     });
     $(".comment").click((event) => {
-      var answered_post = $(event.target).closest("button").val();
-      alert(answered_post);
+      let answered_post = $(event.target).closest("button").val();
+      $("#answered-post-id").val(answered_post);
       let modal = $("#modal");
       if (modal.hasClass("hidden")) {
         modal.removeClass("hidden");

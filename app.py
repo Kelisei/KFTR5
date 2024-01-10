@@ -4,7 +4,6 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import re
-
 import src.utils as utils
 from datetime import datetime
 import base64
@@ -92,7 +91,7 @@ def like(post_id: int):
     abort(404)
 
 
-@app.route("/int:post_id>", methods=["GET"])
+@app.route("/<int:post_id>/see", methods=["GET"])
 def see_post(post_id: int):
     if is_logged():
         post = Post.query.filter_by(post_id=post_id).first()
@@ -225,6 +224,7 @@ def new_post():
             author_id=id,
             text=text,
             image=image,
+            answered_post_id= request.form.get("answered_post_id")
         )
         db.session.add(user_post)
         db.session.commit()
@@ -339,6 +339,7 @@ def validate_user_info(user_data: dict, country_names: list[str]) -> tuple[bool,
 
 
 with app.app_context():
+    print(Post.query.all())
     db.create_all()
 
 if __name__ == "__main__":
