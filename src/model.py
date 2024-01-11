@@ -1,8 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from flask_bcrypt import Bcrypt
 
 db = SQLAlchemy()
-
+bcrypt = Bcrypt()
 
 class User(db.Model):
     """
