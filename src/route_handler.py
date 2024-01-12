@@ -216,9 +216,8 @@ class RouteHandler:
     def new_post(self):
         text = request.form.get("text")
         image = request.files.get("image")
-        image = image.read()
         if image:
-            image = base64.b64encode(optimize_image(image))
+            image = base64.b64encode(optimize_image(image.read()))
         else:
             image = None
         current_session_id = session.get("id")
@@ -233,8 +232,8 @@ class RouteHandler:
             )
             db.session.add(user_post)
             db.session.commit()
-            return redirect("/")
-        return redirect("/")
+            return render_template("post.html", post=user_post, user=User.query.filter_by(user_id=session.get("id")).first())
+        return jsonify({"status": "error", "message": "Invalid session or empty text"})
 
     def login(self):
         if session.get("id"):
