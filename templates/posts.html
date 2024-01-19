@@ -4,23 +4,7 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
   $(document).ready(() => {
-    $(".like-button").click((event) => {
-      event.preventDefault();
-      const form = $(event.target).closest("form");
-      const endpoint = form.attr("action");
-      const username = form.find("button").val();
-      $.ajax({
-        type: "POST",
-        url: endpoint,
-        data: { username: username },
-        success: (data) => {
-          form.find("p").text(data.likes);
-        },
-        error: () => {
-          alert("Failed to like the post!");
-        },
-      });
-    });
+
     $(".comment").click((event) => {
       let answered_post = $(event.target).closest("button").val();
       $("#answered-post-id").val(answered_post);

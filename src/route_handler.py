@@ -106,7 +106,7 @@ class RouteHandler:
                     post.likes += 1
                     db.session.add(new_like)
                 db.session.commit()
-            return jsonify({"likes": post.likes})
+            return f"{post.likes}"
         abort(404)
 
     def see_post(self, post_id: int):

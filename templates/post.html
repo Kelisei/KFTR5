@@ -1,4 +1,4 @@
-<!-- This is the post template for a single post -->
+{#  This is the post template for a single post  #} 
 <div class="flex flex-col align-middle border-b-2 border-gray-700 p-1">
     <form class="flex" action="/{{user.username}}" method="get">
         <button type="submit">
@@ -23,8 +23,8 @@
                 <i class="fa-solid fa-comments"></i>
             </button>
         </form>
-        <form action="/{{post.post_id}}/like" class="like-button text-2xl hover:text-violet-600 duration-75 ease-in flex ">
-            <button type="submit" value="{{user.username}}">
+        <form hx-post="/{{post.post_id}}/like" hx-swap="innerHTML" hx-target="find p" class="like-button text-2xl hover:text-violet-600 duration-75 ease-in flex ">
+            <button type="submit" name="username" value="{{user.username}}">
                 <i class="fa-solid fa-heart"></i>
             </button>
             <p class="px-1">{{post.likes}}</p>
