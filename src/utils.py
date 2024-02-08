@@ -1,15 +1,18 @@
-from flask import session
-from io import BytesIO
-from PIL import Image
-import requests
+import base64
 import re
 from datetime import datetime
-import base64
-from src.model import User, Post, Follows, db
+from io import BytesIO
+
+import requests
+from flask import session
+from PIL import Image
+
+from src.model import Follows, Post, User, bcrypt, db
 
 EMAIL_PATTERN = re.compile(r"[^@]+@[^@]+\.[^@]+")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 SUCCESSFUL = 200
+
 
 def is_allowed_format(filename: str) -> bool:
     """Checks if the image has the accepted format.
@@ -20,7 +23,11 @@ def is_allowed_format(filename: str) -> bool:
     Returns:
         bool: True if it's a png, jpg, jpeg, or gif.
     """
-    return False if "." not in filename else filename.split(".")[-1].lower() in ALLOWED_EXTENSIONS
+    return (
+        False
+        if "." not in filename
+        else filename.split(".")[-1].lower() in ALLOWED_EXTENSIONS
+    )
 
 
 def make_pfp(image_binary: bytes, size: int, format="WebP") -> bytes:
@@ -38,11 +45,13 @@ def make_pfp(image_binary: bytes, size: int, format="WebP") -> bytes:
     image.save(image_buffer, format=format)
     return image_buffer.getvalue()
 
+
 def optimize_image(image_binary: bytes, format="WebP", quality=40) -> bytes:
     image = Image.open(BytesIO(image_binary))
     image_buffer = BytesIO()
     image.save(image_buffer, format=format, quality=quality)
     return image_buffer.getvalue()
+
 
 def get_country_names(lower: bool) -> list[str]:
     """Gets the country names from source and returns a list with all
@@ -60,7 +69,8 @@ def get_country_names(lower: bool) -> list[str]:
             country["name"].lower() if lower else country["name"]
             for country in response.json()
         ]
-    return ["argentina" if lower else "Argentina"]    
+    return ["argentina" if lower else "Argentina"]
+
 
 def process_registration(user_data: dict):
     """
@@ -73,7 +83,7 @@ def process_registration(user_data: dict):
         None
     """
 
-    image_binary = base64.b64encode(utils.make_pfp(user_data["image"].read(), 300))
+    image_binary = base64.b64encode(make_pfp(user_data["image"].read(), 300))
     password_hash = bcrypt.generate_password_hash(password=user_data["password"])
     new_user = User(
         username=user_data["username"],
@@ -106,7 +116,7 @@ def validate_user_info(user_data: dict, country_names: list[str]) -> tuple[bool,
         return (True, "Pick a username with a length between 1 and 30 characters")
     if User.query.filter_by(username=user_data["username"]).first():
         return (True, "That username already exists")
-    if not user_data["email"] or not utils.email_pattern.match(user_data["email"]):
+    if not user_data["email"] or not EMAIL_PATTERN.match(user_data["email"]):
         return (True, "Please enter a valid email, i.e: example@gmail.com")
     if User.query.filter_by(email=user_data["email"]).first():
         return (True, "That email is already in use")
@@ -123,7 +133,7 @@ def validate_user_info(user_data: dict, country_names: list[str]) -> tuple[bool,
         return (True, "Not a valid country")
     if not user_data["image"]:
         return (True, "Profile picture not loaded")
-    if not utils.is_allowed_format(user_data["image"].filename):
+    if not is_allowed_format(user_data["image"].filename):
         return (True, "Introduce a valid image (png, jpg, gif)")
     return (False, "")
 
@@ -153,7 +163,7 @@ def get_follow(followed_id: int, follower_id: int) -> Follows | None:
     return Follows.query.filter_by(
         followed_id=followed_id, follower_id=follower_id
     ).first()
-    
+
+
 def is_logged() -> bool:
     return bool(session.get("id"))
-
