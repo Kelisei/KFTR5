@@ -24,22 +24,27 @@
   </form>
 </div>
 <script>
-  $(document).ready(function () {
-    $("#submit-answer").click(function (event) {
-      let text = $("#answer-text").val();
-      if (text.trim() === "") {
-        alert("Please enter some text");
+  document.addEventListener('DOMContentLoaded', function () {
+    var submitButton = document.getElementById('submit-answer');
+    var answerText = document.getElementById('answer-text');
+    var cancelAnswerButton = document.getElementById('cancel-answer');
+    var modal = document.getElementById('modal');
+
+    submitButton.addEventListener('click', function (event) {
+      var text = answerText.value;
+      if (text.trim() === '') {
+        alert('Please enter some text');
         event.preventDefault();
       }
     });
-    $("#cancel-answer").click(function (event) {
+
+    cancelAnswerButton.addEventListener('click', function (event) {
       event.preventDefault();
-      modal = $("#modal");
-      if (modal.hasClass("hidden")) {
-        modal.removeClass("hidden");
+      if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
       } else {
-        modal.addClass("hidden");
+        modal.classList.add('hidden');
       }
     });
-  })
+  });
 </script>

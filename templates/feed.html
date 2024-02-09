@@ -9,7 +9,7 @@
             name="text"
             placeholder="Speak thy mind"
             class="bg-gray-700 block h-32 w-full rounded-md border-0 p-1.5 text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-        /></textarea>
+        ></textarea>
         <input
             type="file"
             name="image"
@@ -32,23 +32,30 @@
   {% include "posts.html" %}
 </div>
 {% include "modal.html" %}
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="../static/js/functions.js"></script>
 <script>
   document.title = "INTO THE KFTR5VERSE | KFTR5";
+
   let metaDesc = document.createElement('meta');
   metaDesc.name = 'description';
   metaDesc.content = "SPEAK THY MIND";
+
   let head = document.head;
   head.appendChild(metaDesc);
 
-  $(document).ready(function () {
-    $("#submitPost").click(function (event) {
-      let text = $("#post_text").val();
+  document.addEventListener("DOMContentLoaded", function () {
+    activateModal();
+
+    document.getElementById("submitPost").addEventListener("click", function (event) {
+      let text = document.getElementById("post_text").value;
       if (text.trim() === "") {
         alert("Please enter some text");
         event.preventDefault();
       }
-    })
-  })
+    });
+
+    document.addEventListener('change', activateModal);
+  });
 </script>
+
 {% endblock %}

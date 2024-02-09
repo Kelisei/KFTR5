@@ -77,32 +77,42 @@
 </div>
 {% endif %}
 {% include "modal.html" %}
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="../static/js/functions.js"></script>
 <script>
-  function toggleHidden(){
-    screen = $("#edit-screen")
-    if (screen.hasClass("hidden")){
-      screen.removeClass("hidden");
+  function toggleHidden() {
+    const screen = document.getElementById("edit-screen");
+    if (screen.classList.contains("hidden")) {
+      screen.classList.remove("hidden");
     } else {
-      screen.addClass("hidden");
+      screen.classList.add("hidden");
     }
   }
-  let metaDesc = document.createElement("meta");
+
+  const metaDesc = document.createElement("meta");
   metaDesc.name = "description";
   metaDesc.content = "INTO THE KFTR5VERSE: {{ user.username }}";
-  let head = document.head;
+
+  const head = document.head || document.getElementsByTagName("head")[0];
   head.appendChild(metaDesc);
-  $(document).ready(function () {
-    $("#edit-profile").click(function (event) {
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    activateModal();
+
+    document.getElementById("edit-profile").addEventListener("click", function (event) {
       toggleHidden();
-    })
-    $("#cancel-edit").click(function (event) {
+    });
+
+    document.getElementById("cancel-edit").addEventListener("click", function (event) {
       event.preventDefault();
       toggleHidden();
-    })
-    $("#image-input").change(function(){
-      $("#pfp").attr('src', URL.createObjectURL($("#image-input").prop('files')[0])) 
-    })
-  })
+    });
+
+    document.getElementById("image-input").addEventListener("change", function () {
+      const pfp = document.getElementById("pfp");
+      pfp.src = URL.createObjectURL(document.getElementById("image-input").files[0]);
+    });
+  });
 </script>
+
 {% endblock %}

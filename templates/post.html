@@ -31,3 +31,18 @@
         </form>
     </div>
 </div>
+<script>
+  function activateModal() {
+    $(".comment").click((event) => {
+      let answered_post = $(event.target).closest("button").val();
+      $("#answered-post-id").val(answered_post);
+      let modal = $("#modal");
+      if (modal.hasClass("hidden")) {
+        modal.removeClass("hidden");
+      } else {
+        modal.addClass("hidden");
+      }
+    });
+  }
+  $(document).ready(activateModal());
+</script>
