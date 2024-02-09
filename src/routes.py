@@ -52,7 +52,7 @@ def see_post(post_id: int):
             replies = Post.query.filter_by(answered_post_id=post_id)
             replied = Post.query.filter_by(post_id=post.answered_post_id)
             return render_template(
-                "post.html", post=post, replies=replies, replied=replied
+                "post_view.html", post=post, replies=replies, replied=replied
             )
     return redirect("/")
 

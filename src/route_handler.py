@@ -41,6 +41,7 @@ class RouteHandler:
         self.app.route("/<username>/edit", methods=["POST"])(routes.edit_profile)
         self.app.route("/<username>", methods=["GET"])(routes.profile)
         self.app.route("/", methods=["GET", "POST"])(routes.feed)
+        self.app.route("/<int:post_id>/see", methods=["GET"])
         self.app.route("/new_post", methods=["POST"])(routes.new_post)
         self.app.route("/login", methods=["GET", "POST"])(routes.login)
         self.app.route("/register", methods=["GET", "POST"])(routes.register)
