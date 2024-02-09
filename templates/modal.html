@@ -1,6 +1,6 @@
 <div id="modal"
   class="hidden w-1/4 fixed left-1/2 -translate-x-1/2 p-4 bg-gray-900 shadow-2xl rounded-md shadow-black border-2 border-violet-950">
-  <form enctype="multipart/form-data" action="/new_post" method="post">
+  <form hx-confirm="Do you wanna post this?" hx-post="/new_post" hx-encoding="multipart/form-data" hx-swap="afterbegin" hx-target="#posts" hx-indicator="#indicator">
     <div class="mt-2">
       <textarea id="answer-text" type="text" name="text" placeholder="You tell 'em boss"
         class="bg-gray-700 block h-10 w-full rounded-md border-0 p-1.5 text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" /></textarea>
