@@ -1,5 +1,6 @@
 import base64
 from datetime import datetime
+from re import U
 
 from flask import abort, jsonify, redirect, render_template, request, session, url_for
 
@@ -47,12 +48,28 @@ def like(post_id: int):
 
 def see_post(post_id: int):
     if is_logged():
-        post = Post.query.filter_by(post_id=post_id).first()
+
+        post = (
+            db.session.query(Post, User)
+            .join(User, Post.author_id == User.user_id)
+            .filter(Post.post_id == post_id)
+            .first()
+        )
         if bool(post):
-            replies = Post.query.filter_by(answered_post_id=post_id)
-            replied = Post.query.filter_by(post_id=post.answered_post_id)
+            replies = (
+                db.session.query(Post, User)
+                .join(User, Post.author_id == User.user_id)
+                .filter(Post.answered_post_id == post_id)
+                .all()
+            )
+            replied = (
+                db.session.query(Post, User)
+                .join(User, Post.author_id == User.user_id)
+                .filter(Post.post_id == post[0].answered_post_id)
+                .first()
+            )
             return render_template(
-                "post_view.html", post=post, replies=replies, replied=replied
+                "post_view.html", post=post, posts=replies, replied=replied
             )
     return redirect("/")
 

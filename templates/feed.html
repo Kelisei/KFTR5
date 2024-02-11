@@ -54,8 +54,8 @@
       }
     });
 
-    document.addEventListener('change', activateModal);
   });
+    document.addEventListener('htmx:afterSwap', activateModal);
 </script>
 
 {% endblock %}
