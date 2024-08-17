@@ -1,0 +1,65 @@
+<div id="modal"
+     class="hidden w-1/4 fixed left-1/2 -translate-x-1/2 p-4 bg-gray-900 shadow-2xl rounded-md shadow-black border-2 border-violet-950">
+  <form hx-confirm="Do you wanna post this?"
+        hx-post="/new_post"
+        hx-encoding="multipart/form-data"
+        hx-swap="afterbegin"
+        hx-target="#posts"
+        hx-indicator="#indicator">
+    <div class="mt-2">
+      <textarea id="answer-text"
+                type="text"
+                name="text"
+                placeholder="You tell 'em boss"
+                class="bg-gray-700 block h-10 w-full rounded-md border-0 p-1.5 text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" /></textarea>
+    </div>
+    <input name="answered_post_id" id="answered-post-id" class="hidden">
+    <div class="mt-2 flex justify-center align-middle">
+      <input type="file"
+             src="../static/img/default_profile_picture.png"
+             name="image"
+             accept="image/*"
+             title="Upload profile picture"
+             class="text-sm text-white file:mr-4 file:py-2 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-400 file:text-black hover:file:bg-violet-100">
+    </div>
+    <div class="flex justify-evenly">
+      <div class="mt-2 flex justify-center">
+        <input type="submit"
+               value="Cancel"
+               id="cancel-answer"
+               class="text-xl bg-red-900 w-full text-center rounded-md border-0 m-1 p-1.5 text-white shadow-sm ring-1 ring-inset ring-red-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6">
+      </div>
+      <div class="mt-2 flex justify-center">
+        <input type="submit"
+               value="Submit"
+               id="submit-answer"
+               class="text-xl bg-violet-900 w-full text-center rounded-md border-0 m-1 p-1.5 text-white shadow-sm ring-1 ring-inset ring-violet-800 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-500 sm:text-sm sm:leading-6">
+      </div>
+    </div>
+  </form>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var submitButton = document.getElementById('submit-answer');
+    var answerText = document.getElementById('answer-text');
+    var cancelAnswerButton = document.getElementById('cancel-answer');
+    var modal = document.getElementById('modal');
+
+    submitButton.addEventListener('click', function (event) {
+      var text = answerText.value;
+      if (text.trim() === '') {
+        alert('Please enter some text');
+        event.preventDefault();
+      }
+    });
+
+    cancelAnswerButton.addEventListener('click', function (event) {
+      event.preventDefault();
+      if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    });
+  });
+</script>

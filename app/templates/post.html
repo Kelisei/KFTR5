@@ -1,0 +1,41 @@
+{#  This is the post template for a single post  #}
+<div class="flex flex-col align-middle border-b-2 border-gray-700 p-1">
+    <form class="flex" action="/{{ user.username }}" method="get">
+        <button type="submit">
+            <img src="data:image/png;base64,{{ user.profile_picture.decode("utf-8") }}"
+                 class="rounded-full max-h-10 hover:border-4 hover:border-violet-600 duration-75 ease-in">
+        </button>
+        <button type="submit"
+                class="text-xl text-blue-300 mx-4 hover:text-purple-400 border-b-2 border-gray-900 hover:border-purple-400 duration-75 ease-in">
+            {{ user.username }}
+        </button>
+    </form>
+    <p class="p-2 text-xl">{{ post.text }}</p>
+    {% if post.image != None %}
+        <div class="bg-black rounded-md mt-6 p-2">
+            <img src="data:image/png;base64,{{ post.image.decode("utf-8") }}"
+                 class="max-h-96 max-w-96 relative left-1/2 -translate-x-1/2 border-2 border-black">
+        </div>
+    {% endif %}
+    <div class="flex flex-row justify-evenly">
+        <button class="comment text-2xl hover:text-violet-600 duration-75 ease-in"
+                value="{{ post.post_id }}">
+            <i class="fa-solid fa-comment"></i>
+        </button>
+        <form action="/{{ post.post_id }}/see"
+              class="text-2xl hover:text-violet-600 duration-75 ease-in">
+            <button>
+                <i class="fa-solid fa-comments"></i>
+            </button>
+        </form>
+        <form hx-post="/{{ post.post_id }}/like"
+              hx-swap="innerHTML"
+              hx-target="find p"
+              class="like-button text-2xl hover:text-violet-600 duration-75 ease-in flex ">
+            <button type="submit" name="username" value="{{ user.username }}">
+                <i class="fa-solid fa-heart"></i>
+            </button>
+            <p class="px-1">{{ post.likes }}</p>
+        </form>
+    </div>
+</div>

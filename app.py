@@ -1,11 +1,6 @@
-from flask import Flask
+from app.app import create_app
 
-from src.route_handler import RouteHandler
+app = create_app()
 
-# TODO -> add ability to answer your own recently posted posts.
-# TODO -> Post page (see respondant post and responding posts).
-if __name__ == "__main__":
-    app = Flask(__name__)
-    router = RouteHandler(application=app)
-    router.initialize_db()
-    router.run(debug=True)
+if __name__ == '__main__':
+    app.run("0.0.0.0", 5000, True)

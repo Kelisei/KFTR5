@@ -7,7 +7,7 @@ import requests
 from flask import session
 from PIL import Image
 
-from src.model import Follows, Post, User, bcrypt, db
+from .model import Follows, Post, User, bcrypt, db
 
 EMAIL_PATTERN = re.compile(r"[^@]+@[^@]+\.[^@]+")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}

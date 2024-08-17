@@ -1,25 +1,33 @@
-import base64
-from datetime import datetime
-from re import U
+from flask import (
+    Blueprint,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+    jsonify,
+    abort,
+)
+from ..model import Post, Liked, db, bcrypt, User, Follows
 
-from flask import abort, jsonify, redirect, render_template, request, session, url_for
-
-from src.model import Follows, Liked, Post, User, bcrypt, db
-from src.utils import (
-    EMAIL_PATTERN,
-    get_country_names,
-    get_follow,
+from ..utils import (
     is_logged,
+    user_info,
+    user_exists,
+    get_follow,
+    EMAIL_PATTERN,
     make_pfp,
     optimize_image,
-    process_registration,
-    user_exists,
-    user_info,
     user_posts,
-    validate_user_info,
 )
 
+import base64
+from datetime import datetime
 
+feed_bp = Blueprint("feed", __name__)
+
+
+@feed_bp.route("/<int:post_id>/like", methods=["POST"])
 def like(post_id: int):
     if is_logged():
         username = request.form.get("username")
@@ -46,6 +54,7 @@ def like(post_id: int):
     abort(404)
 
 
+@feed_bp.route("/<int:post_id>/see", methods=["GET"])
 def see_post(post_id: int):
     if is_logged():
 
@@ -74,13 +83,14 @@ def see_post(post_id: int):
     return redirect("/")
 
 
+@feed_bp.route("/ownprofile", methods=["GET", "POST"])
 def ownprofile():
     """Redirect to the profile of the currentyly logged user (with post
     request) or goes to login."""
     if is_logged():
         return redirect(
             url_for(
-                "profile",
+                "feed.profile",
                 username=User.query.filter_by(user_id=session.get("id"))
                 .first()
                 .username,
@@ -89,6 +99,7 @@ def ownprofile():
     return redirect("/login")
 
 
+@feed_bp.route("/follow/<username>", methods=["POST"])
 def follow(username: str):
     if is_logged():
         if user_exists(username):
@@ -105,10 +116,11 @@ def follow(username: str):
             else:
                 db.session.delete(new_follow)
             db.session.commit()
-        return redirect(url_for("profile", username=username))
+        return redirect(url_for("feed.profile", username=username))
     redirect("/")
 
 
+@feed_bp.route("/<username>/edit", methods=["POST"])
 def edit_profile(username: str):
     if user_exists(username) and is_logged():
         profile_info = user_info(username)
@@ -132,10 +144,11 @@ def edit_profile(username: str):
                 profile_info.profile_picture = pfp
             print(profile_info)
             db.session.commit()
-            return redirect(url_for("profile", username=username))
+            return redirect(url_for("feed.profile", username=username))
     return redirect("/")
 
 
+@feed_bp.route("/<username>", methods=["GET"])
 def profile(username):
     if not is_logged:
         return redirect("/login")
@@ -155,6 +168,7 @@ def profile(username):
     )
 
 
+@feed_bp.route("/", methods=["GET", "POST"])
 def feed():
     if request.method == "GET" and session.get("id"):
         return render_template(
@@ -172,6 +186,7 @@ def feed():
     return redirect("/login")
 
 
+@feed_bp.route("/new_post", methods=["POST"])
 def new_post():
     text = request.form.get("text")
     image = request.files.get("image")
@@ -197,48 +212,3 @@ def new_post():
             user=User.query.filter_by(user_id=session.get("id")).first(),
         )
     return jsonify({"status": "error", "message": "Invalid session or empty text"})
-
-
-def login():
-    if session.get("id"):
-        redirect("/")
-    if request.method == "GET":
-        return render_template("login.html", message="")
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-        user = User.query.filter_by(email=email).first()
-        if user and bcrypt.check_password_hash(
-            pw_hash=user.password_hash, password=password
-        ):
-            session["id"] = user.user_id
-            return redirect("/")
-        return render_template("login.html", message="Invalid email or password")
-
-
-def register():
-    if session.get("id"):
-        redirect("/")
-    country_names = get_country_names(lower=False)
-    if request.method == "GET":
-        print(User.query.all())
-        return render_template("register.html", message="", countries=country_names)
-    if request.method == "POST":
-        user_data = {"username": request.form.get("username")}
-        user_data["email"] = request.form.get("email")
-        user_data["password"] = request.form.get("password")
-        user_data["country"] = request.form.get("country")
-        user_data["image"] = request.files.get("image")
-        result = validate_user_info(user_data, country_names)
-        if result[0]:
-            return render_template(
-                "register.html",
-                message=result[1],
-                countries=country_names,
-            )
-        process_registration(user_data)
-        return redirect("/")
-
-
-def page_not_found(error):
-    return render_template("page_not_found", error=error), 404
